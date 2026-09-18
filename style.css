@@ -1,0 +1,178 @@
+:root{
+  --sky:#6ec1ff;       /* South African clear blue-ish */
+  --field:#2e8b2e;     /* rugby field green */
+  --accent:#ffd24d;    /* gold accent (Springbok) */
+  --post:#ffffff;      /* goal posts color */
+  --text:#023020;
+  --glass: rgba(255,255,255,0.08);
+  --hud-bg: rgba(0,0,0,0.15);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#game-wrap{height:100%}
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(var(--sky), #9bd8ff 60%, var(--field) 60%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game-wrap{
+  width: 100%;
+  max-width: 900px;
+  height: calc(100vh - 40px);
+  max-height: 700px;
+  position:relative;
+  padding:20px;
+}
+
+canvas#game{
+  width:100%;
+  height:100%;
+  display:block;
+  background: linear-gradient(var(--sky), #a6e0ff 60%, var(--field) 60%);
+  border-radius:10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  image-rendering: optimizeSpeed;
+}
+
+#hud{
+  position:absolute;
+  top:26px;
+  left:26px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+#score{
+  font-weight:700;
+  font-size:32px;
+  padding:8px 14px;
+  background: var(--hud-bg);
+  color:white;
+  border-radius:10px;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+
+#highscore{
+  margin-left:12px;
+  font-weight:700;
+  font-size:14px;
+  padding:6px 10px;
+  background: rgba(0,0,0,0.12);
+  color:white;
+  border-radius:8px;
+  align-self:center;
+}
+
+/* overlay for game over */
+#overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(rgba(2,32,32,0.1), rgba(2,32,32,0.15));
+  z-index:10;
+}
+
+#overlay.hidden{display:none}
+
+#overlay-content{
+  background:rgba(255,255,255,0.96);
+  padding:28px 36px;
+  border-radius:12px;
+  min-width:260px;
+  text-align:center;
+  box-shadow:0 8px 30px rgba(2,32,32,0.15);
+}
+
+#overlay-content h1{
+  margin-bottom:8px;
+  color:var(--text);
+  font-size:28px;
+  letter-spacing:1px;
+}
+
+#overlay-content p{margin:10px 0 18px;font-weight:600;color:#1b3b2d}
+
+#restart{
+  background: linear-gradient(180deg,var(--accent), #f0b836);
+  border:0;
+  padding:10px 18px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,0.12);
+}
+
+#help{
+  position:absolute;
+  right:22px;
+  bottom:22px;
+  z-index:6;
+  background:var(--glass);
+  padding:8px 12px;
+  border-radius:10px;
+  color:white;
+  font-size:13px;
+}
+
+/* start overlay */
+#start-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  background: linear-gradient(rgba(2,32,32,0.08), rgba(2,32,32,0.12));
+}
+#start-content{
+  background:white;
+  padding:24px 28px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 12px 30px rgba(0,0,0,0.2);
+}
+#start-content h2{margin:0 0 8px}
+#start-content label{display:block;margin-top:8px;font-size:14px;color:#2b4a3a}
+#player-name{display:block;margin:8px auto 12px;padding:8px 10px;border-radius:8px;border:1px solid #e0e0e0;width:220px}
+#start-info{margin:8px 0 12px;color:#1b3b2d}
+#start-btn{background:var(--accent);border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+
+#leaderboard-wrap{margin-top:12px;text-align:left}
+#leaderboard-wrap h3{margin:6px 0 6px;font-size:16px;color:#123b2f}
+#leaderboard{padding-left:18px;margin:0}
+#leaderboard li{margin:6px 0;font-weight:600;color:#0f3b2b}
+
+
+/* credit text */
+/* credit fixed so it's always visible */
+#credit{
+  position:fixed;
+  left:20px;
+  bottom:20px;
+  z-index:9999;
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  font-weight:600;
+  color: #ffd24d; /* gold accent */
+  font-size:16px;
+  letter-spacing:0.6px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.55);
+  background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06));
+  padding:8px 12px;
+  border-radius:10px;
+  backdrop-filter: blur(4px);
+  transform: rotate(-2deg);
+}
+
+@media (max-width:520px){
+  #score{font-size:22px;padding:6px 10px}
+  #overlay-content{padding:18px 20px}
+}

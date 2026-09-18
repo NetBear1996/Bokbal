@@ -96,10 +96,10 @@
     let pipeSpeed = 2.6;
     let spawnInterval = 110;
 
-    // Physics tuned similar to Flappy Bird
-    const gravity = 0.5;
-    const jumpImpulse = -9.4;
-    const maxDropSpeed = 12;
+    // Physics tuned similar to Flappy Bird (tweaked for snappier feel)
+    const gravity = 0.55; // slightly stronger gravity
+    const jumpImpulse = -10.0; // slightly stronger jump to match gravity
+    const maxDropSpeed = 14; // allow faster falling
 
     // Pipes (goal posts) settings
     const pipeWidth = 56;

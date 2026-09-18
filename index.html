@@ -1,54 +1,54 @@
 <!doctype html>
 <html lang="en-US">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bokbal — Flappy Rugby</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- stylish font for credits -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Bokbal — Flappy Rugby</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- stylish font for credits -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="game-wrap">
-    <canvas id="game"></canvas>
+    <div id="game-wrap">
+        <canvas id="game"></canvas>
 
-    <div id="hud">
-      <div id="score">0</div>
-      <div id="highscore" title="High score" aria-hidden="true">HS: 0</div>
-    </div>
-
-    <div id="overlay" class="hidden">
-      <div id="overlay-content">
-        <h1>Bokbal</h1>
-        <p id="final-score">Score: 0</p>
-        <p id="highscore-display">High score: 0 — <span id="highscore-name">—</span></p>
-        <div id="leaderboard-wrap">
-          <h3>Leaderboard</h3>
-          <ol id="leaderboard"></ol>
+        <div id="hud">
+            <div id="score">0</div>
+            <div id="highscore" title="High score" aria-hidden="true">HS: 0</div>
         </div>
-        <button id="restart" type="button">Restart</button>
-      </div>
+
+        <div id="overlay" class="hidden">
+            <div id="overlay-content">
+                <h1>Bokbal</h1>
+                <p id="final-score">Score: 0</p>
+                <p id="highscore-display">High score: 0 — <span id="highscore-name">—</span></p>
+                <div id="leaderboard-wrap">
+                    <h3>Leaderboard</h3>
+                    <ol id="leaderboard"></ol>
+                </div>
+                <button id="restart" type="button">Restart</button>
+            </div>
+        </div>
+
+        <!-- start overlay: ask for player name before playing -->
+        <div id="start-overlay">
+            <div id="start-content">
+                <h2>Welcome to Bokbal</h2>
+                <label for="player-name">Enter your name</label>
+                <input id="player-name" type="text" placeholder="Your name" maxlength="24" />
+                <div id="start-info">High score: <span id="stored-highscore">0</span> by <strong id="stored-highname">—</strong></div>
+                <button id="start-btn" type="button" onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+
+        <div id="help">
+            <div>Controls: Space / Click / Tap</div>
+        </div>
+        <div id="credit">Created by Evan Williams</div>
     </div>
 
-    <!-- start overlay: ask for player name before playing -->
-    <div id="start-overlay">
-      <div id="start-content">
-        <h2>Welcome to Bokbal</h2>
-        <label for="player-name">Enter your name</label>
-        <input id="player-name" type="text" placeholder="Your name" maxlength="24" />
-        <div id="start-info">High score: <span id="stored-highscore">0</span> by <strong id="stored-highname">—</strong></div>
-        <button id="start-btn" type="button">Start Game</button>
-      </div>
-    </div>
-
-    <div id="help">
-      <div>Controls: Space / Click / Tap</div>
-    </div>
-    <div id="credit">Created by Evan Williams</div>
-  </div>
-
-  <script src="game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>

@@ -136,13 +136,25 @@
         overlay.style.display = 'none';
         scoreEl.textContent = '0';
         // prepare pre-start countdown (3 seconds) then show "Tap"
+        // reset pre-start / playing flags (countdown started separately)
         playing = false;
         preStart = true;
         preStartRemaining = 3000;
+        preStart = false;
+        preStartRemaining = 0;
         showTap = false;
         lastTimestamp = null;
         // ensure the main loop is running after a restart
         requestAnimationFrame(loop);
+    }
+
+    function startCountdown(ms = 3000) {
+        // prepare pre-start countdown (ms milliseconds) then show "Tap"
+        playing = false;
+        preStart = true;
+        preStartRemaining = ms;
+        showTap = false;
+        lastTimestamp = null;
     }
 
     // Leaderboard (persistent top 5)
@@ -213,6 +225,8 @@
         if (e.code === 'Space') {
             e.preventDefault();
             if (gameOver) resetGame();
+            e.preventDefault(); a
+            if (gameOver) { resetGame(); startCountdown(); }
             jump();
         }
     });
@@ -220,6 +234,7 @@
     canvas.addEventListener('mousedown', (e) => {
         e.preventDefault();
         if (gameOver) resetGame();
+        if (gameOver) { resetGame(); startCountdown(); }
         jump();
     });
     canvas.addEventListener(
@@ -227,6 +242,7 @@
         (e) => {
             e.preventDefault();
             if (gameOver) { resetGame(); return; }
+            if (gameOver) { resetGame(); startCountdown(); return; }
             jump();
         },
         { passive: false }
@@ -234,6 +250,7 @@
 
     // single restart handler
     restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
+    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); startCountdown(); });
 
     // fallback delegation in case startBtn reference was not found
     document.body.addEventListener('click', (e) => {
@@ -246,6 +263,7 @@
             if (startOverlay) startOverlay.style.display = 'none';
             updateLeaderboardDisplay();
             resetGame();
+            startCountdown();
             running = true;
             requestAnimationFrame(loop);
         }
@@ -261,6 +279,7 @@
             // ensure leaderboard display refreshed
             updateLeaderboardDisplay();
             resetGame();
+            startCountdown();
             running = true;
             requestAnimationFrame(loop);
         });

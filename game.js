@@ -48,6 +48,8 @@
     let preStartRemaining = 0; // ms remaining in countdown
     let showTap = false; // true when countdown finished and waiting for tap
     let lastTimestamp = null; // for delta timing
+    let currentTime = 0;
+    let invulnerableUntil = 0; // timestamp ms until collisions ignored after start
 
     // persisted high score
     let storedHigh = parseInt(localStorage.getItem('bokbalHighScore')) || 0;
@@ -96,10 +98,10 @@
     let pipeSpeed = 2.6;
     let spawnInterval = 110;
 
-    // Physics tuned similar to Flappy Bird (tweaked for snappier feel)
-    const gravity = 0.55; // slightly stronger gravity
-    const jumpImpulse = -10.0; // slightly stronger jump to match gravity
-    const maxDropSpeed = 14; // allow faster falling
+    // Physics tuned similar to Flappy Bird
+    const gravity = 0.5; // moderate gravity
+    const jumpImpulse = -9.2; // balanced jump strength
+    const maxDropSpeed = 12; // moderate terminal velocity
 
     // Pipes (goal posts) settings
     const pipeWidth = 56;
@@ -135,11 +137,8 @@
         // ensure overlay is removed from layout (robust hide)
         overlay.style.display = 'none';
         scoreEl.textContent = '0';
-        // prepare pre-start countdown (3 seconds) then show "Tap"
         // reset pre-start / playing flags (countdown started separately)
         playing = false;
-        preStart = true;
-        preStartRemaining = 3000;
         preStart = false;
         preStartRemaining = 0;
         showTap = false;
@@ -213,6 +212,8 @@
             showTap = false;
             startIfNeeded();
             ball.vy = jumpImpulse;
+            // give short invulnerability to avoid immediate crash
+            invulnerableUntil = currentTime + 600;
             return;
         }
         if (!playing) return; // only allow jump when playing
@@ -223,8 +224,6 @@
     // input
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
-            e.preventDefault();
-            if (gameOver) resetGame();
             e.preventDefault(); a
             if (gameOver) { resetGame(); startCountdown(); }
             jump();
@@ -233,7 +232,6 @@
 
     canvas.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        if (gameOver) resetGame();
         if (gameOver) { resetGame(); startCountdown(); }
         jump();
     });
@@ -241,7 +239,6 @@
         'touchstart',
         (e) => {
             e.preventDefault();
-            if (gameOver) { resetGame(); return; }
             if (gameOver) { resetGame(); startCountdown(); return; }
             jump();
         },
@@ -249,7 +246,6 @@
     );
 
     // single restart handler
-    restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); });
     restartBtn.addEventListener('click', (e) => { e.preventDefault(); resetGame(); startCountdown(); });
 
     // fallback delegation in case startBtn reference was not found
@@ -362,7 +358,8 @@
         const groundY = H * 0.92;
         if (ball.y + ball.r >= groundY) {
             ball.y = groundY - ball.r;
-            if (playing) endGame();
+            // only trigger endGame if invulnerability expired
+            if (playing && currentTime >= invulnerableUntil) endGame();
         }
         if (ball.y - ball.r <= 12) {
             ball.y = 12 + ball.r;
@@ -374,11 +371,14 @@
             const topRect = { x: p.x, y: 0, w: p.width, h: p.top };
             const bottomRect = { x: p.x, y: p.top + p.gap, w: p.width, h: H - (p.top + p.gap) };
 
-            if (circleRectCollision(ball.x, ball.y, ball.r - 3, topRect.x, topRect.y, topRect.w, topRect.h)) {
-                endGame();
-            }
-            if (circleRectCollision(ball.x, ball.y, ball.r - 3, bottomRect.x, bottomRect.y, bottomRect.w, bottomRect.h)) {
-                endGame();
+            // ignore pipe collisions while invulnerable
+            if (currentTime >= invulnerableUntil) {
+                if (circleRectCollision(ball.x, ball.y, ball.r - 3, topRect.x, topRect.y, topRect.w, topRect.h)) {
+                    endGame();
+                }
+                if (circleRectCollision(ball.x, ball.y, ball.r - 3, bottomRect.x, bottomRect.y, bottomRect.w, bottomRect.h)) {
+                    endGame();
+                }
             }
             if (gameOver) break;
         }
@@ -540,38 +540,85 @@
     }
 
     function drawRugbyBall(x, y, r, rotation) {
+        // Stylized Gilbert-like rugby ball (leather gradient, white panels, stitches, branding)
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(rotation);
-        ctx.scale(1.4, 1);
+        ctx.scale(1.35, 1); // slight horizontal elongation
+
+        // soft drop shadow beneath the ball
         ctx.beginPath();
-        ctx.ellipse(0, r * 0.6, r * 0.9, r * 0.5, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, r * 0.7, r * 0.95, r * 0.45, 0, 0, Math.PI * 2);
         ctx.fillStyle = colors.shadow;
         ctx.fill();
 
+        // main leather body with a horizontal gradient for depth
+        const leatherGrad = ctx.createLinearGradient(-r * 1.1, 0, r * 1.1, 0);
+        leatherGrad.addColorStop(0, '#6f3f20');
+        leatherGrad.addColorStop(0.5, '#9b5a2d');
+        leatherGrad.addColorStop(1, '#6f3f20');
         ctx.beginPath();
         ctx.ellipse(0, 0, r, r * 0.6, 0, 0, Math.PI * 2);
-        ctx.fillStyle = colors.ballBrown;
+        ctx.fillStyle = leatherGrad;
         ctx.fill();
-        ctx.strokeStyle = '#5b2f19';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = '#4b2716';
         ctx.stroke();
 
+        // center white panel and the two small side panels (three-panel appearance)
+        ctx.fillStyle = '#ffffff';
+        // central elongated panel
         ctx.beginPath();
-        ctx.ellipse(0, 0, r * 0.5, r * 0.22, 0, 0, Math.PI * 2);
-        ctx.fillStyle = colors.ballStripe;
+        ctx.ellipse(0, 0, r * 0.52, r * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // left small panel
+        ctx.beginPath();
+        ctx.ellipse(-r * 0.5, 0, r * 0.18, r * 0.11, -0.35, 0, Math.PI * 2);
+        ctx.fill();
+        // right small panel
+        ctx.beginPath();
+        ctx.ellipse(r * 0.5, 0, r * 0.18, r * 0.11, 0.35, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#6b3f2a';
+        // subtle inner panel shadow to sell curvature
+        ctx.beginPath();
+        ctx.ellipse(0, r * 0.02, r * 0.46, r * 0.18, 0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx.fill();
+
+        // stitching across the central white panel
+        ctx.strokeStyle = '#4a2d20';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-r * 0.12, -r * 0.08);
-        ctx.lineTo(r * 0.12, -r * 0.08);
-        ctx.moveTo(-r * 0.12, 0);
-        ctx.lineTo(r * 0.12, 0);
-        ctx.moveTo(-r * 0.12, r * 0.08);
-        ctx.lineTo(r * 0.12, r * 0.08);
+        const stitchCount = 7;
+        for (let i = 0; i < stitchCount; i++) {
+            const t = (i / (stitchCount - 1)) - 0.5;
+            const sx = t * (r * 0.62);
+            ctx.moveTo(sx, -r * 0.045);
+            ctx.lineTo(sx, r * 0.045);
+        }
         ctx.stroke();
+
+        // small decorative stitch dashes along edges of center panel
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#6b3f2a';
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const t = (i / 5) - 0.5;
+            const ex = t * (r * 0.9);
+            ctx.moveTo(ex, -r * 0.12);
+            ctx.lineTo(ex + (r * 0.03), -r * 0.09);
+            ctx.moveTo(ex, r * 0.12);
+            ctx.lineTo(ex + (r * 0.03), r * 0.09);
+        }
+        ctx.stroke();
+
+        // branding text - suggestive 'GILBERT' (keeps within panel)
+        ctx.fillStyle = '#111';
+        ctx.font = Math.max(10, Math.floor(r * 0.36)) + 'px Poppins, Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('GILBERT', 0, -r * 0.02);
 
         ctx.restore();
     }
@@ -601,6 +648,7 @@
         if (!lastTimestamp) lastTimestamp = ts;
         const delta = ts - lastTimestamp;
         lastTimestamp = ts;
+        currentTime = ts;
 
         // handle pre-start countdown timing
         if (preStart && preStartRemaining > 0) {

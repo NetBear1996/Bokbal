@@ -186,6 +186,11 @@
     }
 
     function addToLeaderboard(name, score) {
+        // if remote configured, add remotely and return
+        if (useRemote) {
+            addToRemoteLeaderboard(name, score);
+            // also keep local copy for offline fallback
+        }
         const list = loadLeaderboard();
         list.push({ name: name || 'Player', score: Number(score) || 0, date: Date.now() });
         list.sort((a, b) => b.score - a.score || a.date - b.date);
@@ -196,6 +201,78 @@
 
     // initialize leaderboard UI
     updateLeaderboardDisplay();
+
+    // Remote leaderboard (Firebase) support - optional
+    let useRemote = false;
+    let remoteDb = null;
+
+    function initRemoteLeaderboard() {
+        if (!window.FIREBASE_CONFIG) return;
+        try {
+            // initialize compat SDK if available
+            if (window.firebase && firebase.initializeApp) {
+                firebase.initializeApp(window.FIREBASE_CONFIG);
+                remoteDb = firebase.firestore();
+                useRemote = true;
+                console.log('Firebase initialized for remote leaderboard');
+                fetchRemoteLeaderboard();
+            }
+        } catch (e) {
+            console.warn('Failed to init remote leaderboard:', e);
+        }
+    }
+
+    async function fetchRemoteLeaderboard() {
+        if (!useRemote || !remoteDb) return;
+        try {
+            const q = await remoteDb.collection('bokbal').orderBy('score', 'desc').limit(5).get();
+            const list = [];
+            q.forEach(doc => list.push(doc.data()));
+            // update UI with remote list
+            const wrap = document.getElementById('leaderboard');
+            if (wrap) {
+                wrap.innerHTML = '';
+                list.forEach((item, i) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${i + 1}. ${item.name} — ${item.score}`;
+                    wrap.appendChild(li);
+                });
+            }
+            // update HUD highscore if remote top exists
+            if (list.length > 0) {
+                storedHigh = list[0].score;
+                storedHighName = list[0].name;
+                refreshHighscoreDisplays();
+            }
+        } catch (e) {
+            console.warn('fetchRemoteLeaderboard error', e);
+        }
+    }
+
+    async function addToRemoteLeaderboard(name, score) {
+        if (!useRemote || !remoteDb) return;
+        try {
+            await remoteDb.collection('bokbal').add({ name: name || 'Player', score: Number(score) || 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            // refresh remote leaderboard
+            fetchRemoteLeaderboard();
+        } catch (e) {
+            console.warn('addToRemoteLeaderboard error', e);
+        }
+    }
+
+    async function getUserRemoteHigh(name) {
+        if (!useRemote || !remoteDb) return null;
+        try {
+            const q = await remoteDb.collection('bokbal').where('name', '==', name).orderBy('score', 'desc').limit(1).get();
+            if (!q.empty) return q.docs[0].data();
+        } catch (e) {
+            console.warn('getUserRemoteHigh error', e);
+        }
+        return null;
+    }
+
+    // initialize remote if config provided
+    initRemoteLeaderboard();
 
     function startIfNeeded() {
         if (!started) started = true;
@@ -273,7 +350,20 @@
             playerName = name.substring(0, 24);
             if (startOverlay) startOverlay.style.display = 'none';
             // ensure leaderboard display refreshed
-            updateLeaderboardDisplay();
+            // if remote available, fetch user high and remote leaderboard
+            (async () => {
+                if (useRemote) {
+                    const userHigh = await getUserRemoteHigh(playerName);
+                    if (userHigh) {
+                        storedHigh = userHigh.score;
+                        storedHighName = userHigh.name;
+                        refreshHighscoreDisplays();
+                    }
+                    await fetchRemoteLeaderboard();
+                } else {
+                    updateLeaderboardDisplay();
+                }
+            })();
             resetGame();
             startCountdown();
             running = true;

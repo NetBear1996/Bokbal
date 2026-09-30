@@ -51,5 +51,24 @@
     </div>
 
     <script src="game.js"></script>
+    <!-- Optional: Firebase for shared leaderboard
+         To enable shared online leaderboard, create a Firebase project, enable Firestore,
+         then add a small inline script setting window.FIREBASE_CONFIG with your config
+         (replace the placeholder values). Example:
+
+    <script>
+      window.FIREBASE_CONFIG = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT",
+        // ...other fields
+      };
+    </script>
+
+         Also include the Firebase SDK scripts before game.js if you want the client
+         to initialize automatically. For convenience you can add these above game.js:
+         <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+         <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    -->
 </body>
 </html>
